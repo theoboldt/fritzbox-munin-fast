@@ -32,6 +32,7 @@ from lxml import etree
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:10.0) Gecko/20100101 Firefox/10.0"
 
 
+<<<<<<< HEAD
 def get_session_id(server, password, user='network-maint', port=80):
   """Obtains the session id after login into the Fritzbox.
   See https://avm.de/fileadmin/user_upload/Global/Service/Schnittstellen/AVM_Technical_Note_-_Session_ID.pdf
@@ -60,7 +61,7 @@ def get_session_id(server, password, user='network-maint', port=80):
   session_id = root.xpath('//SessionInfo/SID/text()')[0]
   if session_id == "0000000000000000":
     challenge = root.xpath('//SessionInfo/Challenge/text()')[0]
-    challenge_bf = ('{}-{}'.format(challenge, password)).decode('iso-8859-1').encode('utf-16le')
+    challenge_bf = ('{}-{}'.format(challenge, password)).encode('utf-16le')
     m = hashlib.md5()
     m.update(challenge_bf)
     response_bf = '{}-{}'.format(challenge, m.hexdigest().lower())
@@ -138,3 +139,35 @@ def get_page_content(server, session_id, page, port=80, params=None):
       sys.exit(1)
     return r.content
 
+<<<<<<< HEAD
+=======
+
+def get_xhr_content(server, session_id, page, port=80):
+    """Fetches the xhr content from the Fritzbox and returns its content
+
+    :param server: the ip address of the Fritzbox
+    :param session_id: a valid session id
+    :param page: the page you are regquesting
+    :param port: the port the Fritzbox webserver runs on
+    :return: the content of the page
+    """
+
+    headers = {"Accept": "application/xml",
+               "Content-Type": "application/x-www-form-urlencoded",
+               "User-Agent": USER_AGENT}
+
+    url = 'http://{}:{}/data.lua'.format(server, port)
+    data = {"xhr": 1,
+            "sid": session_id,
+            "lang": "en",
+            "page": page,
+            "xhrId": "all",
+            "no_sidrenew": ""
+            }
+    try:
+        r = requests.post(url, data=data, headers=headers)
+    except requests.exceptions.HTTPError as err:
+        print(err)
+        sys.exit(1)
+    return r.content
+>>>>>>> 2dd4e0701394d90aa0e0f3e3ef9bebfeec90d8e8
