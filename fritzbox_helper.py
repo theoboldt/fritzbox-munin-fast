@@ -13,7 +13,7 @@
   env.fritzbox_ip [ip address of the fritzbox]
   env.fritzbox_password [fritzbox password]
   env.fritzbox_user [fritzbox user, set any value if not required]
-  
+
   This plugin supports the following munin configuration parameters:
   #%# family=auto contrib
   #%# capabilities=autoconf
@@ -32,7 +32,6 @@ from lxml import etree
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:10.0) Gecko/20100101 Firefox/10.0"
 
 
-<<<<<<< HEAD
 def get_session_id(server, password, user='network-maint', port=80):
   """Obtains the session id after login into the Fritzbox.
   See https://avm.de/fileadmin/user_upload/Global/Service/Schnittstellen/AVM_Technical_Note_-_Session_ID.pdf
@@ -139,9 +138,6 @@ def get_page_content(server, session_id, page, port=80, params=None):
       sys.exit(1)
     return r.content
 
-<<<<<<< HEAD
-=======
-
 def get_xhr_content(server, session_id, page, port=80):
     """Fetches the xhr content from the Fritzbox and returns its content
 
@@ -170,4 +166,3 @@ def get_xhr_content(server, session_id, page, port=80):
         print(err)
         sys.exit(1)
     return r.content
->>>>>>> 2dd4e0701394d90aa0e0f3e3ef9bebfeec90d8e8
