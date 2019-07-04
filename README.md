@@ -21,6 +21,7 @@ Multigraph plugin, showing:
  - memory usage
  - CPU load
  - CPU temperature
+ 
 (requires password)
 
 ## fritzbox_energy
@@ -28,6 +29,7 @@ Multigraph plugin, showing:
  - power consumption for CPU, WiFi, WAN, Fon, USB and total
  - devices connected on WiFi and LAN
  - system uptime
+ 
 (requires password)
 
 ## fritzbox_link_saturation
