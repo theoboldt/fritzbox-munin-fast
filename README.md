@@ -1,4 +1,4 @@
-# fritzbox-munin
+# fritzbox-munin-fast
 
 A collection of munin plugins to monitor your AVM FRITZ!Box router. The scripts have been developed using a FRITZ!Box 7530 running FRITZ!OS 7.10.
 
@@ -45,7 +45,7 @@ Multigraph plugin, showing for 2.4GHz and 5GHz
 
 ## Installation & Configuration
 
-1. Pre-requesites for the fritzbox\_traffic and fritzbox\_uptime plugins are the [fritzconnection](https://pypi.python.org/pypi/fritzconnection) and [requests](https://pypi.python.org/pypi/requests) package. To install it
+1. Pre-requesites for the fritzbox\_traffic and fritzbox\_connection\_uptime plugins are the [fritzconnection](https://pypi.python.org/pypi/fritzconnection) and [requests](https://pypi.python.org/pypi/requests) package. To install it
 
         pip install fritzconnection
         pip install requests
@@ -72,7 +72,7 @@ Multigraph plugin, showing for 2.4GHz and 5GHz
 
 ## Localization
 
-Two scripts depend on the language selected in your fritzbox: the uptime and wifi\_devices. Currently, two locales are
+The fritzbox_energy script depends on the language selected in your fritzbox. Currently, two locales are
 supported:
 
 1. German: `de` (default)
