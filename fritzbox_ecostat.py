@@ -57,9 +57,8 @@ def print_system_stats():
   password = os.environ['fritzbox_password']
   user = os.environ['fritzbox_user']
 
-  session_id = fh.get_session_id(server, password, user)
   # download the graphs
-  data = fh.post_page_content(server, session_id, PAGE, data=PARAMS)
+  data = fh.post_page_with_login(server, user, password, PAGE, data=PARAMS)
   jsondata = json.loads(data)['data']
 
   if 'cpu' in modes:

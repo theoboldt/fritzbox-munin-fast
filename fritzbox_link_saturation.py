@@ -26,7 +26,7 @@ import json
 import fritzbox_helper as fh
 
 PAGE = 'internet/inetstat_monitor.lua'
-PARAMS = '&useajax=1&action=get_graphic&xhr=1&myXhr=1'
+PARAMS = {'useajax':1, 'action':'get_graphic', 'xhr':1, 'myXhr':1}
 DATA_UP   = ['us_realtime_bps_curr', 'us_important_bps_curr', 'us_default_bps_curr', 'us_background_bps_curr']
 LABELS_UP = ['realtime', 'high', 'default', 'low']
 DATA_DN   = ['ds_bps_curr', 'ds_mc_bps_curr']
@@ -46,8 +46,7 @@ def print_link_saturation():
   password = os.environ['fritzbox_password']
   user = os.environ['fritzbox_user']
 
-  session_id = fh.get_session_id(server, password, user)
-  data = fh.get_page_content(server, session_id, PAGE, params=PARAMS)
+  data = fh.get_page_with_login(server, user, password, PAGE, params=PARAMS)
   # all data is embedded in a one-element array, so strip that array away
   jsondata = json.loads(data)[0]
 

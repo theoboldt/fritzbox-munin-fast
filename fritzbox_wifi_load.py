@@ -57,11 +57,11 @@ def print_wifi_load():
   password = os.environ['fritzbox_password']
   user = os.environ['fritzbox_user']
 
-  session_id = fh.get_session_id(server, password, user)
   # set up the graphs (load the 10-minute view)
-  fh.post_page_content(server, session_id, PAGE, data=PARAMS_INIT)
+  fh.post_page_with_login(server, user, password, PAGE, data=PARAMS_INIT)
   # download the graphs
-  data = fh.post_page_content(server, session_id, PAGE, data=PARAMS)
+  # TODO share the Session ID between the two requests
+  data = fh.post_page_with_login(server, user, password, PAGE, data=PARAMS)
   jsondata = json.loads(data)['data']
 
   freqs = get_freqs()

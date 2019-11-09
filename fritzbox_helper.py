@@ -25,12 +25,31 @@
 
 import hashlib
 import sys
+import os
 
 import requests
 from lxml import etree
 
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:10.0) Gecko/20100101 Firefox/10.0"
 
+def save_session_id(session_id, server, port, user):
+  if '__' in server or '__' in user:
+    raise Exception("Reserved string \"__\" in server or user name")
+  statedir = os.environ['MUNIN_PLUGSTATE'] + '/fritzbox'
+  if not os.path.exists(statedir):
+    os.makedirs(statedir)
+  statefilename = statedir + '/' + server + '__' + str(port) + '__' + user + '.sid'
+  with open(statefilename, 'w') as statefile:
+    statefile.write(session_id)
+
+def load_session_id(server, port, user):
+  statedir = os.environ['MUNIN_PLUGSTATE'] + '/fritzbox'
+  statefilename = statedir + '/' + server + '__' + str(port) + '__' + user + '.sid'
+  if not os.path.exists(statefilename):
+    return None
+  with open(statefilename, 'r') as statefile:
+    session_id = statefile.readline()
+  return session_id
 
 def get_session_id(server, password, user='network-maint', port=80):
   """Obtains the session id after login into the Fritzbox.
@@ -84,9 +103,12 @@ def get_session_id(server, password, user='network-maint', port=80):
   if session_id == "0000000000000000":
     print("ERROR - No SID received because of invalid password")
     sys.exit(0)
+
+  save_session_id(session_id, server, port, user)
+
   return session_id
 
-def post_page_content(server, session_id, page, port=80, data={}):
+def post_page_content(server, session_id, page, port=80, data={}, exceptions=False):
   """Sends a POST request to the Fritzbox and returns the response
 
   :param server: the ip address of the Fritzbox
@@ -108,11 +130,13 @@ def post_page_content(server, session_id, page, port=80, data={}):
     r = requests.post(url, headers=headers, data=data)
     r.raise_for_status()
   except requests.exceptions.HTTPError as err:
+    if exceptions:
+      raise err
     print(err)
     sys.exit(1)
   return r.content
 
-def get_page_content(server, session_id, page, port=80, params=None):
+def get_page_content(server, session_id, page, port=80, params=None, exceptions=False):
     """Fetches a page from the Fritzbox and returns its content
 
     :param server: the ip address of the Fritzbox
@@ -129,16 +153,26 @@ def get_page_content(server, session_id, page, port=80, params=None):
 
     url = 'http://{}:{}/{}?sid={}'.format(server, port, page, session_id)
     if params:
-      url = url + params
+      paramsStr = "?"
+      l = len(params)
+      i = 0
+      for k,v in params.items():
+        paramsStr += k + '=' + str(v)
+        i += 1
+        if i < l:
+          paramsStr += '&'
+      url = url + paramsStr
     try:
       r = requests.get(url, headers=headers)
       r.raise_for_status()
     except requests.exceptions.HTTPError as err:
+      if exceptions:
+        raise err
       print(err)
       sys.exit(1)
     return r.content
 
-def get_xhr_content(server, session_id, page, port=80):
+def get_xhr_content(server, session_id, page, port=80, exceptions=False):
     """Fetches the xhr content from the Fritzbox and returns its content
 
     :param server: the ip address of the Fritzbox
@@ -163,6 +197,36 @@ def get_xhr_content(server, session_id, page, port=80):
     try:
         r = requests.post(url, data=data, headers=headers)
     except requests.exceptions.HTTPError as err:
+        if exceptions:
+            raise err
         print(err)
         sys.exit(1)
     return r.content
+
+# TODO deduplicate these methods
+
+def get_page_with_login(server, user, password, page, port=80, params=None):
+  session_id = load_session_id(server, port, user)
+  if session_id != None:
+    try:
+      return get_page_content(server, session_id, page, port, params, exceptions=True)
+    except requests.exceptions.HTTPError as e:
+      code = e.response.status_code
+      if code != 403:
+        print(err)
+        sys.exit(1)
+  session_id = get_session_id(server, password, user, port)
+  return get_page_content(server, session_id, page, port, params)
+
+def post_page_with_login(server, user, password, page, port=80, data=None):
+  session_id = load_session_id(server, port, user)
+  if session_id != None:
+    try:
+      return post_page_content(server, session_id, page, port, data, exceptions=True)
+    except requests.exceptions.HTTPError as e:
+      code = e.response.status_code
+      if code != 403:
+        print(err)
+        sys.exit(1)
+  session_id = get_session_id(server, password, user, port)
+  return post_page_content(server, session_id, page, port, params)
