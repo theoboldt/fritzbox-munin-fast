@@ -14,6 +14,7 @@
   env.fritzbox_password [fritzbox password]
   env.fritzbox_user [fritzbox user, set any value if not required]
   env.energy_modes [power] [devices] [uptime]
+  env.energy_product [DSL | repeater]
 
   This plugin supports the following munin configuration parameters:
   #%# family=auto contrib
@@ -29,6 +30,7 @@ import fritzbox_helper as fh
 PAGE = 'data.lua'
 PARAMS = {'xhr':1, 'lang':'de', 'page':'energy', 'xhrId':'all', 'useajax':1, 'no_sidrenew':None}
 DEVICES = ['system', 'cpu', 'wifi', 'dsl', 'ab', 'usb', 'lan']
+DEVICES_REPEATER = ['system', 'cpu', 'wifi', 'lan']
 HASPOWERSTATS = {'system':1, 'cpu':1, 'wifi':1, 'dsl':1, 'ab':1, 'usb':1, 'lan':0}
 INFO = {
   'system' : 'Fritzbox overall power consumption',
@@ -51,10 +53,21 @@ pattern = re.compile(patternLoc[locale])
 def get_modes():
   return os.environ['energy_modes'].split(' ')
 
+def get_type():
+  return os.environ['energy_product']
+
+def get_devices_for(type):
+  if type == "DSL":
+    return DEVICES
+  if type == "repeater":
+    return DEVICES_REPEATER
+  raise Exception("No such type")
+
 def print_energy_stats():
     """print the current energy statistics"""
-    
+
     modes = get_modes()
+    type = get_type()
 
     server = os.environ['fritzbox_ip']
     password = os.environ['fritzbox_password']
@@ -64,30 +77,32 @@ def print_energy_stats():
     data = fh.post_page_with_login(server, user, password, PAGE, data=PARAMS)
     jsondata = json.loads(data)['data']['drain']
 
+    devices = get_devices_for(type)
+
     if 'power' in modes:
       print("multigraph power")
-      for i in range(len(DEVICES)):
-        if not HASPOWERSTATS[DEVICES[i]]:
+      for i in range(len(devices)):
+        if not HASPOWERSTATS[devices[i]]:
           continue
         val = jsondata[i]['actPerc']
-        print(DEVICES[i] + ".value " + str(val))
+        print(devices[i] + ".value " + str(val))
     
     if 'devices' in modes:
       print("multigraph devices")
       # this is an array
-      statuses_wifi = jsondata[DEVICES.index('wifi')]['statuses']
+      statuses_wifi = jsondata[devices.index('wifi')]['statuses']
       if len(statuses_wifi) == 2:
         line = statuses_wifi[1]
         num = line.split()[0]
         print('wifi.value ' + num)
       # this is a string (AVM, whyyy?)
-      status_lan = jsondata[DEVICES.index('lan')]['statuses']
+      status_lan = jsondata[devices.index('lan')]['statuses']
       num = status_lan.split()[0]
       print('lan.value ' + num)
       
     if 'uptime' in modes:
       print("multigraph uptime")
-      status_uptime = jsondata[DEVICES.index('system')]['statuses']
+      status_uptime = jsondata[devices.index('system')]['statuses']
       matches = re.finditer(pattern, status_uptime)
       if matches:
         hours = 0.0
@@ -103,6 +118,8 @@ def print_energy_stats():
 
 def print_config():
     modes = get_modes()
+    type = get_type()
+    devices = get_devices_for(type)
 
     if 'power' in modes:
       print("multigraph power")
@@ -111,11 +128,11 @@ def print_config():
       print("graph_args --lower-limit 0 --upper-limit 100 --rigid")
       print("graph_category system")
       order = ""
-      for d in DEVICES:
+      for d in devices:
         if HASPOWERSTATS[d]:
           order += " " + d
       print("graph_order" + order)
-      for d in DEVICES:
+      for d in devices:
         if not HASPOWERSTATS[d]:
           continue
         print(d + ".label " + d)
