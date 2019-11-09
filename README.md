@@ -16,6 +16,16 @@ If you are using the scripts on a different Fritz!Box model please let me know b
 ## fritzbox_connection_uptime
 Shows the WAN connection uptime (requires fritzconnection)
 
+## fritzbox_dsl
+Multigraph plugin, showing:
+ - DSL checksum errors
+ - DSL transmission errors
+ - line loss
+ - link capacity
+ - signal-to-noise ratio
+ 
+ (requires password)
+
 ## fritzbox_ecostat
 Multigraph plugin, showing:
  - memory usage
