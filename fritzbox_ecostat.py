@@ -33,11 +33,11 @@ RAMLABELS = ['strict', 'cache', 'free']
 def get_modes():
   return os.environ['ecostat_modes'].split(' ')
 
-def print_simple_series(data, name, graph):
+def print_simple_series(data, name, graph, limits=None):
   """print last value of first json data series"""
-  print_multi_series(data, [name], graph)
+  print_multi_series(data, [name], graph, limits)
 
-def print_multi_series(data, names, graph):
+def print_multi_series(data, names, graph, limits=None):
   """print last value of multiple json data series"""
 
   print("multigraph " + graph)
@@ -46,11 +46,12 @@ def print_multi_series(data, names, graph):
     s = series[i]
     n = names[i]
     val = s[-1] # last entry is latest measurement
-    print(n + '.value ' + str(val))
+    if (limits is None) or val in limits:
+      print(n + '.value ' + str(val))
 
 def print_system_stats():
   """print the current system statistics"""
-  
+
   modes = get_modes()
 
   server = os.environ['fritzbox_ip']
@@ -64,10 +65,10 @@ def print_system_stats():
   if 'cpu' in modes:
     cpuload_data = jsondata['cpuutil']
     print_simple_series(cpuload_data, 'load', 'cpuload')
-    
+
   if 'temp' in modes:
     cputemp_data = jsondata['cputemp']
-    print_simple_series(cputemp_data, 'temp', 'cputemp')
+    print_simple_series(cputemp_data, 'temp', 'cputemp', limits=range(0, 120))
 
   if 'ram' in modes:
     ramusage_data = jsondata['ramusage']
