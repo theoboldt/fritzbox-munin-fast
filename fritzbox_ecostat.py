@@ -33,11 +33,11 @@ RAMLABELS = ['strict', 'cache', 'free']
 def get_modes():
   return os.environ['ecostat_modes'].split(' ')
 
-def print_simple_series(data, name, graph, limits=None):
+def print_simple_series(data, name, graph, low=None, high=None):
   """print last value of first json data series"""
-  print_multi_series(data, [name], graph, limits)
+  print_multi_series(data, [name], graph, low, high)
 
-def print_multi_series(data, names, graph, limits=None):
+def print_multi_series(data, names, graph, low=None, high=None):
   """print last value of multiple json data series"""
 
   print("multigraph " + graph)
@@ -46,8 +46,10 @@ def print_multi_series(data, names, graph, limits=None):
     s = series[i]
     n = names[i]
     val = s[-1] # last entry is latest measurement
-    if (limits is None) or val in limits:
+    if (low is None or float(val) > low) and (high is None or float(val) < high):
       print(n + '.value ' + str(val))
+    else:
+      print("# " + str(val) + " exceeded limits " + str(low) + " - " + str(high))
 
 def print_system_stats():
   """print the current system statistics"""
@@ -68,7 +70,7 @@ def print_system_stats():
 
   if 'temp' in modes:
     cputemp_data = jsondata['cputemp']
-    print_simple_series(cputemp_data, 'temp', 'cputemp', limits=range(0, 120))
+    print_simple_series(cputemp_data, 'temp', 'cputemp', low=0, high=120)
 
   if 'ram' in modes:
     ramusage_data = jsondata['ramusage']
