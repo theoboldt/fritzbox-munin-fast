@@ -118,7 +118,7 @@ def print_config():
       if not mode in modes:
         continue
       print("multigraph dsl_" + mode)
-      fh.print_title(TITLES[mode])
+      print("graph_title " + TITLES[mode])
       print("graph_vlabel " + VLABELS[mode])
       print("graph_args --lower-limit 0")
       print("graph_category network")
@@ -133,7 +133,7 @@ def print_config():
 
     if 'errors' in modes:
       print("multigraph dsl_errors")
-      fh.print_title(TITLES['errors'])
+      print("graph_title " + TITLES['errors'])
       print("graph_vlabel " + VLABELS['errors'])
       print("graph_args --lower-limit 0")
       print("graph_category network")
@@ -144,8 +144,6 @@ def print_config():
         print(p + ".graph LINE1")
         print(p + ".min 0")
         print(p + ".warning 1")
-
-    fh.print_hostname()
 
 if __name__ == "__main__":
   if len(sys.argv) == 2 and sys.argv[1] == 'config':

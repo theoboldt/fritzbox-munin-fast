@@ -188,12 +188,3 @@ def call_page_with_login(method, page, port=80, data=None):
         sys.exit(1)
   session_id = get_session_id(server, password, user, port)
   return method(server, session_id, page, port, params)
-
-def print_title(title):
-  if not os.getenv('host_name'):
-    title = "AVM Fritz!Box " + title
-  print("graph_title " + title)
-
-def print_hostname():
-  if os.getenv('host_name'):
-    print("host_name " + os.getenv('host_name'))

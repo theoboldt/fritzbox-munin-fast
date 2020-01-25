@@ -119,7 +119,7 @@ def print_config():
 
     if 'power' in modes:
       print("multigraph power")
-      fh.print_title("Power Consumption")
+      print("graph_title Power Consumption")
       print("graph_vlabel %")
       print("graph_args --lower-limit 0 --upper-limit 100 --rigid")
       print("graph_category system")
@@ -140,7 +140,7 @@ def print_config():
 
     if 'devices' in modes:
       print("multigraph devices")
-      fh.print_title("Connected Devices")
+      print("graph_title Connected Devices")
       print("graph_vlabel Number of devices")
       print("graph_args --base 1000")
       print("graph_category network")
@@ -155,15 +155,13 @@ def print_config():
 
     if 'uptime' in modes:
       print("multigraph uptime")
-      fh.print_title("Uptime")
+      print("graph_title Uptime")
       print("graph_vlabel uptime in days")
       print("graph_args --base 1000 -l 0")
       print("graph_scale no")
       print("graph_category system")
       print("uptime.label uptime")
       print("uptime.draw AREA")
-
-    fh.print_hostname()
 
 if __name__ == "__main__":
   if len(sys.argv) == 2 and sys.argv[1] == 'config':

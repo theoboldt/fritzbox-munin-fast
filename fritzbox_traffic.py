@@ -27,7 +27,7 @@ from fritzconnection import FritzConnection
 
 def print_traffic():
   try:
-    conn = FritzConnection(address=os.getenv('fritzbox_ip'), use_tls=True)
+    conn = FritzConnection(address=os.getenv('fritzbox_ip'), password=os.getenv('fritzbox_password'), use_tls=True)
   except Exception as e:
     sys.exit("Couldn't get WAN traffic")
 
@@ -45,7 +45,7 @@ def print_traffic():
     print('maxup.value %d' % max_up_traffic)
 
 def print_config():
-  fh.print_title("WAN traffic")
+  print("graph_title WAN traffic")
   print("graph_args --base 1000")
   print("graph_vlabel bits in (-) / out (+) per \${graph_period}")
   print("graph_category network")
@@ -73,7 +73,6 @@ def print_config():
     print("maxup.negative maxdown")
     print("maxup.draw LINE1")
     print("maxup.info Maximum speed of the WAN interface.")
-  fh.print_hostname()
 
 if __name__ == "__main__":
     if len(sys.argv) == 2 and sys.argv[1] == 'config':

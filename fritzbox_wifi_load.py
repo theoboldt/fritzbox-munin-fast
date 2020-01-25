@@ -93,7 +93,7 @@ def print_config():
   for freq in freqs:
     if 'freqs' in modes:
       print("multigraph bandwidth_" + freq + 'ghz')
-      fh.print_title("WIFI " + freq + "GHz bandwidth usage")
+      print("graph_title WIFI " + freq + "GHz bandwidth usage")
       print("graph_vlabel percent")
       print("graph_category network")
       print("graph_args --lower-limit 0 --upper-limit 100 --rigid")
@@ -105,7 +105,7 @@ def print_config():
         print(multiP + '.draw AREASTACK')
     if 'neighbors' in modes:
       print("multigraph neighbors_" + freq + 'ghz')
-      fh.print_title("WIFI " + freq + "GHz neighbor APs")
+      print("graph_title WIFI " + freq + "GHz neighbor APs")
       print("graph_vlabel number of APs")
       print("graph_category network")
       print("graph_args --lower-limit 0")
@@ -115,8 +115,6 @@ def print_config():
         print(multiP + '.label ' + l)
         print(multiP + '.type GAUGE')
         print(multiP + '.draw AREASTACK')
-
-  fh.print_hostname()
 
 if __name__ == "__main__":
   if len(sys.argv) == 2 and sys.argv[1] == 'config':

@@ -61,7 +61,7 @@ def print_link_saturation():
 
 def print_config():
   print("multigraph saturation_up")
-  fh.print_title("Uplink saturation")
+  print("graph_title Uplink saturation")
   print("graph_vlabel bits out per ${graph_period}")
   print("graph_category network")
   print("graph_args --base 1000 --lower-limit 0")
@@ -76,7 +76,7 @@ def print_config():
   print("maxup.graph LINE1")
 
   print("multigraph saturation_down")
-  fh.print_title("Downlink saturation")
+  print("graph_title Downlink saturation")
   print("graph_vlabel bits in per ${graph_period}")
   print("graph_category network")
   print("graph_args --base 1000 --lower-limit 0")
@@ -89,8 +89,6 @@ def print_config():
   print("maxdown.label MAX")
   print("maxdown.type GAUGE")
   print("maxdown.graph LINE1")
-
-  fh.print_hostname()
 
 if __name__ == "__main__":
   if len(sys.argv) == 2 and sys.argv[1] == 'config':

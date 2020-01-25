@@ -77,7 +77,7 @@ def print_config():
 
   if 'cpu' in modes:
     print("multigraph cpuload")
-    fh.print_title("CPU usage")
+    print("graph_title CPU usage")
     print("graph_vlabel %")
     print("graph_category system")
     print("graph_order cpu")
@@ -90,7 +90,7 @@ def print_config():
 
   if 'temp' in modes:
     print("multigraph cputemp")
-    fh.print_title("CPU temperature")
+    print("graph_title CPU temperature")
     print("graph_vlabel degrees Celsius")
     print("graph_category sensors")
     print("graph_order tmp")
@@ -103,7 +103,7 @@ def print_config():
 
   if 'ram' in modes:
     print("multigraph ramusage")
-    fh.print_title("Memory")
+    print("graph_title Memory")
     print("graph_vlabel %")
     print("graph_args --base 1000 -r --lower-limit 0 --upper-limit 100")
     print("graph_category system")
@@ -114,8 +114,6 @@ def print_config():
       print(l + ".label " + l)
       print(l + ".type GAUGE")
       print(l + ".draw AREASTACK")
-
-  fh.print_hostname()
 
 if __name__ == "__main__":
   if len(sys.argv) == 2 and sys.argv[1] == 'config':

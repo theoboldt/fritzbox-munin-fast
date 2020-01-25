@@ -26,7 +26,7 @@ from fritzconnection import FritzConnection
 
 def print_uptime():
   try:
-    conn = FritzConnection(address=os.environ.get('fritzbox_ip'), use_tls=True)
+    conn = FritzConnection(address=os.getenv('fritzbox_ip'), password=os.getenv('fritzbox_password'), use_tls=True)
   except Exception as e:
     sys.exit("Couldn't get connection uptime")
 
@@ -40,8 +40,7 @@ def print_uptime():
   print('uptime.value %.2f' % (int(uptime) / 86400.0))
 
 def print_config():
-  fh.print_title("Connection Uptime")
-  fh.print_hostname()
+  print("graph_title Connection Uptime")
   print("graph_args --base 1000 -l 0")
   print("graph_vlabel uptime in days")
   print("graph_scale no")
