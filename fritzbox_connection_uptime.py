@@ -26,11 +26,17 @@ from fritzconnection import FritzConnection
 
 def print_uptime():
   try:
-    conn = FritzConnection(address=os.environ['fritzbox_ip'])
+    conn = FritzConnection(address=os.environ['fritzbox_ip'], use_tls=True)
   except Exception as e:
     sys.exit("Couldn't get connection uptime")
 
-  uptime = conn.call_action('WANIPConnection', 'GetStatusInfo')['NewUptime']
+  # @see https://avm.de/fileadmin/user_upload/Global/Service/Schnittstellen/wanipconnSCPD.pdf
+  connectionType = conn.call_action('Layer3Forwarding', 'GetDefaultConnectionService')['NewDefaultConnectionService']
+  if connectionType == "1.WANPPPConnection.1":
+    service = "WANPPPConnection"
+  else:
+    service = "WANIPConnection"
+  uptime = conn.call_action(service, 'GetStatusInfo')['NewUptime']
   print('uptime.value %.2f' % (int(uptime) / 86400.0))
 
 

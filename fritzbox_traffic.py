@@ -26,7 +26,7 @@ from fritzconnection import FritzConnection
 
 def print_traffic():
   try:
-    conn = FritzConnection(address=os.environ['fritzbox_ip'])
+    conn = FritzConnection(address=os.environ['fritzbox_ip'], use_tls=True)
   except Exception as e:
     sys.exit("Couldn't get WAN traffic")
 
@@ -37,8 +37,7 @@ def print_traffic():
   print('up.value %d' % up_traffic)
 
   if not os.environ.get('traffic_remove_max'):
-    max_down_traffic = conn.call_action('WANCommonInterfaceConfig', 'GetCommonLinkProperties')[
-        'NewLayer1DownstreamMaxBitRate']
+    max_down_traffic = conn.call_action('WANCommonInterfaceConfig', 'GetCommonLinkProperties')['NewLayer1DownstreamMaxBitRate']
     print('maxdown.value %d' % max_down_traffic)
 
     max_up_traffic = conn.call_action('WANCommonInterfaceConfig', 'GetCommonLinkProperties')[
