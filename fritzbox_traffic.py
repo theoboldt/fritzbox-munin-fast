@@ -12,6 +12,7 @@
 
   [fritzbox_*]
   env.fritzbox_ip [ip address of the fritzbox]
+  env.traffic_remove_max [0|1]
 
   This plugin supports the following munin configuration parameters:
   #%# family=auto contrib
@@ -40,8 +41,7 @@ def print_traffic():
     max_down_traffic = conn.call_action('WANCommonInterfaceConfig', 'GetCommonLinkProperties')['NewLayer1DownstreamMaxBitRate']
     print('maxdown.value %d' % max_down_traffic)
 
-    max_up_traffic = conn.call_action('WANCommonInterfaceConfig', 'GetCommonLinkProperties')[
-        'NewLayer1UpstreamMaxBitRate']
+    max_up_traffic = conn.call_action('WANCommonInterfaceConfig', 'GetCommonLinkProperties')['NewLayer1UpstreamMaxBitRate']
     print('maxup.value %d' % max_up_traffic)
 
 
