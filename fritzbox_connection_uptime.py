@@ -20,13 +20,13 @@
 
 import os
 import sys
+import fritzbox_helper as fh
 
 from fritzconnection import FritzConnection
 
-
 def print_uptime():
   try:
-    conn = FritzConnection(address=os.environ['fritzbox_ip'], use_tls=True)
+    conn = FritzConnection(address=os.environ.get('fritzbox_ip'), use_tls=True)
   except Exception as e:
     sys.exit("Couldn't get connection uptime")
 
@@ -39,18 +39,15 @@ def print_uptime():
   uptime = conn.call_action(service, 'GetStatusInfo')['NewUptime']
   print('uptime.value %.2f' % (int(uptime) / 86400.0))
 
-
 def print_config():
-  print("graph_title AVM Fritz!Box Connection Uptime")
+  fh.print_title("Connection Uptime")
+  fh.print_hostname()
   print("graph_args --base 1000 -l 0")
   print("graph_vlabel uptime in days")
   print("graph_scale no")
   print("graph_category network")
   print("uptime.label uptime")
   print("uptime.draw AREA")
-  if os.environ.get('host_name'):
-    print("host_name " + os.environ['host_name'])
-
 
 if __name__ == "__main__":
   if len(sys.argv) == 2 and sys.argv[1] == 'config':

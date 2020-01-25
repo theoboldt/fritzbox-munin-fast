@@ -21,13 +21,13 @@
 
 import os
 import sys
+import fritzbox_helper as fh
 
 from fritzconnection import FritzConnection
 
-
 def print_traffic():
   try:
-    conn = FritzConnection(address=os.environ['fritzbox_ip'], use_tls=True)
+    conn = FritzConnection(address=os.getenv('fritzbox_ip'), use_tls=True)
   except Exception as e:
     sys.exit("Couldn't get WAN traffic")
 
@@ -37,16 +37,15 @@ def print_traffic():
   up_traffic = conn.call_action('WANCommonInterfaceConfig', 'GetTotalBytesSent')['NewTotalBytesSent']
   print('up.value %d' % up_traffic)
 
-  if not os.environ.get('traffic_remove_max'):
+  if not os.getenv('traffic_remove_max'):
     max_down_traffic = conn.call_action('WANCommonInterfaceConfig', 'GetCommonLinkProperties')['NewLayer1DownstreamMaxBitRate']
     print('maxdown.value %d' % max_down_traffic)
 
     max_up_traffic = conn.call_action('WANCommonInterfaceConfig', 'GetCommonLinkProperties')['NewLayer1UpstreamMaxBitRate']
     print('maxup.value %d' % max_up_traffic)
 
-
 def print_config():
-  print("graph_title AVM Fritz!Box WAN traffic")
+  fh.print_title("WAN traffic")
   print("graph_args --base 1000")
   print("graph_vlabel bits in (-) / out (+) per \${graph_period}")
   print("graph_category network")
@@ -59,13 +58,13 @@ def print_config():
   print("down.max 1000000000")
   print("up.label bps")
   print("up.type DERIVE")
-  print("up.draw AREA")
+  print("up.draw LINE")
   print("up.cdef up,8,*")
   print("up.min 0")
   print("up.max 1000000000")
   print("up.negative down")
   print("up.info Traffic of the WAN interface.")
-  if not os.environ.get('traffic_remove_max'):
+  if not os.getenv('traffic_remove_max'):
     print("maxdown.label received")
     print("maxdown.type GAUGE")
     print("maxdown.graph no")
@@ -74,9 +73,7 @@ def print_config():
     print("maxup.negative maxdown")
     print("maxup.draw LINE1")
     print("maxup.info Maximum speed of the WAN interface.")
-  if os.environ.get('host_name'):
-    print("host_name " + os.environ['host_name'])
-
+  fh.print_hostname()
 
 if __name__ == "__main__":
     if len(sys.argv) == 2 and sys.argv[1] == 'config':

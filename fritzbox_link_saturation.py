@@ -42,9 +42,9 @@ def average_bps(datapoints):
 def print_link_saturation():
   """get the current DSL link saturation"""
 
-  server = os.environ['fritzbox_ip']
-  password = os.environ['fritzbox_password']
-  user = os.environ['fritzbox_user']
+  server = os.getenv('fritzbox_ip')
+  password = os.getenv('fritzbox_password')
+  user = os.getenv('fritzbox_user')
 
   data = fh.get_page_with_login(server, user, password, PAGE, params=PARAMS)
   # all data is embedded in a one-element array, so strip that array away
@@ -65,7 +65,7 @@ def print_link_saturation():
 
 def print_config():
   print("multigraph saturation_up")
-  print("graph_title AVM Fritz!Box uplink saturation")
+  fh.print_title("Uplink saturation")
   print("graph_vlabel bits out per ${graph_period}")
   print("graph_category network")
   print("graph_args --base 1000 --lower-limit 0")
@@ -80,7 +80,7 @@ def print_config():
   print("maxup.graph LINE1")
 
   print("multigraph saturation_down")
-  print("graph_title AVM Fritz!Box downlink saturation")
+  fh.print_title("Downlink saturation")
   print("graph_vlabel bits in per ${graph_period}")
   print("graph_category network")
   print("graph_args --base 1000 --lower-limit 0")
@@ -94,9 +94,7 @@ def print_config():
   print("maxdown.type GAUGE")
   print("maxdown.graph LINE1")
 
-  if os.environ.get('host_name'):
-      print("host_name " + os.environ['host_name'])
-
+  fh.print_hostname()
 
 if __name__ == "__main__":
   if len(sys.argv) == 2 and sys.argv[1] == 'config':
