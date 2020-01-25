@@ -42,11 +42,7 @@ def average_bps(datapoints):
 def print_link_saturation():
   """get the current DSL link saturation"""
 
-  server = os.getenv('fritzbox_ip')
-  password = os.getenv('fritzbox_password')
-  user = os.getenv('fritzbox_user')
-
-  data = fh.get_page_with_login(server, user, password, PAGE, params=PARAMS)
+  data = fh.call_page_with_login(fh.get, PAGE, data=PARAMS)
   # all data is embedded in a one-element array, so strip that array away
   jsondata = json.loads(data)[0]
 

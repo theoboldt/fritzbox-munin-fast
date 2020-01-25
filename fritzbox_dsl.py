@@ -60,17 +60,13 @@ def print_graph(name, recv, send, prefix=""):
   print(prefix + "recv.value " + recv)
   print(prefix + "send.value " + send)
 
-def print_energy_stats():
+def print_dsl_stats():
     """print the current DSL statistics"""
     
     modes = get_modes()
 
-    server = os.getenv('fritzbox_ip')
-    password = os.getenv('fritzbox_password')
-    user = os.getenv('fritzbox_user')
-    
     # download the table
-    data = fh.get_page_with_login(server, user, password, PAGE, params=PARAMS)
+    data = fh.call_page_with_login(fh.get, PAGE, data=PARAMS)
     root = html.fragments_fromstring(data)
     
     if 'capacity' in modes:
@@ -142,6 +138,6 @@ if __name__ == "__main__":
     print("yes")  # Some docs say it'll be called with fetch, some say no arg at all
   elif len(sys.argv) == 1 or (len(sys.argv) == 2 and sys.argv[1] == 'fetch'):
     try:
-      print_energy_stats()
+      print_dsl_stats()
     except:
-      sys.exit("Couldn't retrieve fritzbox energy stats")
+      sys.exit("Couldn't retrieve fritzbox dsl stats")

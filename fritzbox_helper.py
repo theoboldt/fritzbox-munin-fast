@@ -108,7 +108,7 @@ def get_session_id(server, password, user='network-maint', port=80):
 
   return session_id
 
-def post_page_content(server, session_id, page, port=80, data={}, exceptions=False):
+def post(server, session_id, page, port=80, data={}, exceptions=False):
   """Sends a POST request to the Fritzbox and returns the response
 
   :param server: the ip address of the Fritzbox
@@ -136,7 +136,7 @@ def post_page_content(server, session_id, page, port=80, data={}, exceptions=Fal
     sys.exit(1)
   return r.content
 
-def get_page_content(server, session_id, page, port=80, params=None, exceptions=False):
+def get(server, session_id, page, port=80, data=None, exceptions=False):
     """Fetches a page from the Fritzbox and returns its content
 
     :param server: the ip address of the Fritzbox
@@ -152,11 +152,11 @@ def get_page_content(server, session_id, page, port=80, params=None, exceptions=
                "User-Agent": USER_AGENT}
 
     url = 'http://{}:{}/{}?sid={}'.format(server, port, page, session_id)
-    if params:
+    if data:
       paramsStr = "&"
-      l = len(params)
+      l = len(data)
       i = 0
-      for k,v in params.items():
+      for k,v in data.items():
         paramsStr += k + '=' + str(v)
         i += 1
         if i < l:
@@ -172,64 +172,22 @@ def get_page_content(server, session_id, page, port=80, params=None, exceptions=
       sys.exit(1)
     return r.content
 
-def get_xhr_content(server, session_id, page, port=80, exceptions=False):
-    """Fetches the xhr content from the Fritzbox and returns its content
+def call_page_with_login(method, page, port=80, data=None):
+  server = os.getenv('fritzbox_ip')
+  password = os.getenv('fritzbox_password')
+  user = os.getenv('fritzbox_user')
 
-    :param server: the ip address of the Fritzbox
-    :param session_id: a valid session id
-    :param page: the page you are regquesting
-    :param port: the port the Fritzbox webserver runs on
-    :return: the content of the page
-    """
-
-    headers = {"Accept": "application/xml",
-               "Content-Type": "application/x-www-form-urlencoded",
-               "User-Agent": USER_AGENT}
-
-    url = 'http://{}:{}/data.lua'.format(server, port)
-    data = {"xhr": 1,
-            "sid": session_id,
-            "lang": "en",
-            "page": page,
-            "xhrId": "all",
-            "no_sidrenew": ""
-            }
-    try:
-        r = requests.post(url, data=data, headers=headers)
-    except requests.exceptions.HTTPError as err:
-        if exceptions:
-            raise err
-        print(err)
-        sys.exit(1)
-    return r.content
-
-# TODO deduplicate these methods
-
-def get_page_with_login(server, user, password, page, port=80, params=None):
   session_id = load_session_id(server, port, user)
   if session_id != None:
     try:
-      return get_page_content(server, session_id, page, port, params, exceptions=True)
+      return method(server, session_id, page, port, data, exceptions=True)
     except requests.exceptions.HTTPError as e:
       code = e.response.status_code
       if code != 403:
         print(err)
         sys.exit(1)
   session_id = get_session_id(server, password, user, port)
-  return get_page_content(server, session_id, page, port, params)
-
-def post_page_with_login(server, user, password, page, port=80, data=None):
-  session_id = load_session_id(server, port, user)
-  if session_id != None:
-    try:
-      return post_page_content(server, session_id, page, port, data, exceptions=True)
-    except requests.exceptions.HTTPError as e:
-      code = e.response.status_code
-      if code != 403:
-        print(err)
-        sys.exit(1)
-  session_id = get_session_id(server, password, user, port)
-  return post_page_content(server, session_id, page, port, params)
+  return method(server, session_id, page, port, params)
 
 def print_title(title):
   if not os.getenv('host_name'):
