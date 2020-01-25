@@ -153,7 +153,7 @@ def get_page_content(server, session_id, page, port=80, params=None, exceptions=
 
     url = 'http://{}:{}/{}?sid={}'.format(server, port, page, session_id)
     if params:
-      paramsStr = "?"
+      paramsStr = "&"
       l = len(params)
       i = 0
       for k,v in params.items():

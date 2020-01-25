@@ -114,7 +114,7 @@ def print_energy_stats():
             if m.group(2) == minutesLoc[locale]:
                 hours += int(m.group(1)) / 60.0
         uptime = hours / 24
-        print "uptime.value %.2f" % uptime
+        print("uptime.value %.2f" % uptime)
 
 def print_config():
     modes = get_modes()
