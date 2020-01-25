@@ -97,8 +97,22 @@ def print_dsl_stats():
       crc_send = root[4].xpath('tr[position() = 4]/td[position() = 4]')[0].text
       print_graph("dsl_crc", crc_recv, crc_send)
 
+def retrieve_max_values():
+    max = {}
+    page = 'internet/inetstat_monitor.lua'
+    params = {'useajax':1, 'action':'get_graphic', 'xhr':1, 'myXhr':1}
+    data = fh.call_page_with_login(fh.get, page, data=params)
+
+    # Retrieve max values
+    jsondata = json.loads(data)[0]
+    max['send'] = int(float(jsondata['upstream']))
+    max['recv'] = int(float(jsondata['downstream']))
+
+    return max
+
 def print_config():
     modes = get_modes()
+    max = retrieve_max_values()
 
     for mode in ['capacity', 'snr', 'damping', 'crc']:
       if not mode in modes:
@@ -115,6 +129,7 @@ def print_config():
         print(p + ".min 0")
         if mode == 'capacity':
           print(p + ".cdef " + p + ",1000,*")
+          print(p + ".warning " + str(max[p]))
 
     if 'errors' in modes:
       print("multigraph dsl_errors")
@@ -128,6 +143,7 @@ def print_config():
         print(p + ".type " + TYPES['errors'])
         print(p + ".graph LINE1")
         print(p + ".min 0")
+        print(p + ".warning 1")
 
     fh.print_hostname()
 
