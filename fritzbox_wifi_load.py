@@ -56,7 +56,6 @@ def print_wifi_load():
   # set up the graphs (load the 10-minute view)
   fh.call_page_with_login(fh.post, PAGE, data=PARAMS_INIT)
   # download the graphs
-  # TODO share the Session ID between the two requests
   data = fh.call_page_with_login(fh.post, PAGE, data=PARAMS)
   jsondata = json.loads(data)['data']
 
