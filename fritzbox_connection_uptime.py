@@ -20,31 +20,33 @@
 
 import os
 import sys
+import fritzbox_helper as fh
 
 from fritzconnection import FritzConnection
 
-
 def print_uptime():
   try:
-    conn = FritzConnection(address=os.environ['fritzbox_ip'])
+    conn = FritzConnection(address=os.getenv('fritzbox_ip'), password=os.getenv('fritzbox_password'), use_tls=True)
   except Exception as e:
     sys.exit("Couldn't get connection uptime")
 
-  uptime = conn.call_action('WANIPConnection', 'GetStatusInfo')['NewUptime']
+  # @see https://avm.de/fileadmin/user_upload/Global/Service/Schnittstellen/wanipconnSCPD.pdf
+  connectionType = conn.call_action('Layer3Forwarding', 'GetDefaultConnectionService')['NewDefaultConnectionService']
+  if connectionType == "1.WANPPPConnection.1":
+    service = "WANPPPConnection"
+  else:
+    service = "WANIPConnection"
+  uptime = conn.call_action(service, 'GetStatusInfo')['NewUptime']
   print('uptime.value %.2f' % (int(uptime) / 86400.0))
 
-
 def print_config():
-  print("graph_title AVM Fritz!Box Connection Uptime")
+  print("graph_title Connection Uptime")
   print("graph_args --base 1000 -l 0")
   print("graph_vlabel uptime in days")
   print("graph_scale no")
   print("graph_category network")
   print("uptime.label uptime")
   print("uptime.draw AREA")
-  if os.environ.get('host_name'):
-    print("host_name " + os.environ['host_name'])
-
 
 if __name__ == "__main__":
   if len(sys.argv) == 2 and sys.argv[1] == 'config':

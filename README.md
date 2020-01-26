@@ -1,6 +1,6 @@
 # fritzbox-munin-fast
 
-A collection of munin plugins to monitor your AVM FRITZ!Box router. The scripts have been developed using a FRITZ!Box 7530 running FRITZ!OS 7.10.
+A collection of munin plugins to monitor your AVM FRITZ!Box router. The scripts have been developed using a FRITZ!Box 7590 running FRITZ!OS 7.12.
 
 If you are using the scripts on a different Fritz!Box model please let me know by
 
@@ -9,9 +9,9 @@ If you are using the scripts on a different Fritz!Box model please let me know b
 
 ## Introduction
 
-   These python scripts are [Munin](http://munin-monitoring.org) plugins for monitoring the [Fritz!Box](http://avm.de/produkte/fritzbox/) router by AVM. They build upon [fritzbox-munin](https://github.com/Tafkas/fritzbox-munin) with the goal to make use of the modern APIs that FritzOS7 provides. No HTML Scraping is used. All data is fetched either through the TR-064 interface or the JSON API.
+   These python scripts are [Munin](http://munin-monitoring.org) plugins for monitoring the [Fritz!Box](http://avm.de/produkte/fritzbox/) router by AVM. They're build upon [fritzbox-munin](https://github.com/Tafkas/fritzbox-munin) with the goal to make use of the modern APIs that FritzOS 7 provides. No HTML Scraping is used. All data is fetched either through the TR-064 interface or the JSON API.
    
-   Contrary to the original version, this fork uses multigraphs. This removes the need to query the same API endpoint multiple times. All multigraph plugins have configuration options to switch individual graphs on and off. Munin 1.4.0 or later is required.
+   Contrary to the original version this fork uses multigraphs. This removes the need to query the same API endpoint multiple times. All multigraph plugins have configuration options to switch individual graphs on and off. Munin 1.4.0 or later is required.
 
 ## fritzbox_connection_uptime
 Shows the WAN connection uptime (requires fritzconnection)
@@ -55,10 +55,9 @@ Multigraph plugin, showing for 2.4GHz and 5GHz
 
 ## Installation & Configuration
 
-1. Pre-requesites for the fritzbox\_traffic and fritzbox\_connection\_uptime plugins are the [fritzconnection](https://pypi.python.org/pypi/fritzconnection) and [requests](https://pypi.python.org/pypi/requests) package. To install it
+1. Pre-requesites for the `fritzbox_traffic` and `fritzbox_connection_uptime` plugins are the [fritzconnection](https://pypi.python.org/pypi/fritzconnection) and [requests](https://pypi.python.org/pypi/requests) package. To install it
 
-        pip install fritzconnection
-        pip install requests
+        pip install fritzconnection requests
 
 2. Make sure the FritzBox has UPnP status information enabled. (German interface: Heimnetz > Heimnetzübersicht > Netzwerkeinstellungen > Statusinformationen über UPnP übertragen)
 
@@ -74,15 +73,15 @@ Multigraph plugin, showing for 2.4GHz and 5GHz
    
    See the plugin files for plugin-specific configuration options.
 
-5. Create symbolic links to `/etc/munin/plugins`.
+5. For each plugin you want to activate, create a symbolic link to `/etc/munin/plugins`.
 
-6. Restart the munin-node daemon: `/etc/init.d/munin-node restart`.
+6. Restart the munin-node daemon: `service munin-node restart`.
 
 7. Done. You should now start to see the charts on the Munin pages.
 
 ## Localization
 
-The fritzbox_energy script depends on the language selected in your fritzbox. Currently, two locales are
+The `fritzbox_energy` script depends on the language selected in your fritzbox. Currently, two locales are
 supported:
 
 1. German: `de` (default)
@@ -92,9 +91,9 @@ You can change the used locale by setting an environment variable in your plugin
 
     env.locale en
 
-## Different hosts for the fritzbox and your system
+## Different hosts for the FritzBox and your system
 
-You can split the graphs of your fritzbox from the localhost graphs by following the next steps:
+You can split the graphs of your FritzBox from the localhost graphs by following the next steps:
 
 1. Use the following as your host configuration in `/etc/munin/munin.conf`
 
@@ -107,11 +106,7 @@ You can split the graphs of your fritzbox from the localhost graphs by following
             address 127.0.0.1
             use_node_name no
 
-2. Add the following to your munin-node configuration
-
-    env.host_name fritzbox
-
-3. Restart your munin-node: `systemctl restart munin-node`
+1. Restart your munin-node: `service restart munin-node`
 
 ## Environment Settings
 

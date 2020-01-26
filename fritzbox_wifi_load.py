@@ -45,23 +45,18 @@ def average_load(datapoints):
   return (recv,send)
 
 def get_freqs():
-  return os.environ['wifi_freqs'].split(' ')
+  return os.getenv('wifi_freqs').split(' ')
 
 def get_modes():
-  return os.environ['wifi_modes'].split(' ')
+  return os.getenv('wifi_modes').split(' ')
 
 def print_wifi_load():
   """get the current wifi bandwidth usage"""
 
-  server = os.environ['fritzbox_ip']
-  password = os.environ['fritzbox_password']
-  user = os.environ['fritzbox_user']
-
   # set up the graphs (load the 10-minute view)
-  fh.post_page_with_login(server, user, password, PAGE, data=PARAMS_INIT)
+  fh.call_page_with_login(fh.post, PAGE, data=PARAMS_INIT)
   # download the graphs
-  # TODO share the Session ID between the two requests
-  data = fh.post_page_with_login(server, user, password, PAGE, data=PARAMS)
+  data = fh.call_page_with_login(fh.post, PAGE, data=PARAMS)
   jsondata = json.loads(data)['data']
 
   freqs = get_freqs()
@@ -92,14 +87,13 @@ def print_wifi_load():
       print(freq + 'ghz_samechan.value ' + str(sameChan))
       print(freq + 'ghz_otherchans.value ' + str(otherChans))
 
-
 def print_config():
   freqs = get_freqs()
   modes = get_modes()
   for freq in freqs:
     if 'freqs' in modes:
       print("multigraph bandwidth_" + freq + 'ghz')
-      print("graph_title AVM Fritz!Box WIFI " + freq + "GHz bandwidth usage")
+      print("graph_title WIFI " + freq + "GHz bandwidth usage")
       print("graph_vlabel percent")
       print("graph_category network")
       print("graph_args --lower-limit 0 --upper-limit 100 --rigid")
@@ -111,7 +105,7 @@ def print_config():
         print(multiP + '.draw AREASTACK')
     if 'neighbors' in modes:
       print("multigraph neighbors_" + freq + 'ghz')
-      print("graph_title AVM Fritz!Box WIFI " + freq + "GHz neighbor APs")
+      print("graph_title WIFI " + freq + "GHz neighbor APs")
       print("graph_vlabel number of APs")
       print("graph_category network")
       print("graph_args --lower-limit 0")
@@ -121,10 +115,6 @@ def print_config():
         print(multiP + '.label ' + l)
         print(multiP + '.type GAUGE')
         print(multiP + '.draw AREASTACK')
-
-  if os.environ.get('host_name'):
-      print("host_name " + os.environ['host_name'])
-
 
 if __name__ == "__main__":
   if len(sys.argv) == 2 and sys.argv[1] == 'config':
