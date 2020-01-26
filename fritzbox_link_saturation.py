@@ -23,7 +23,7 @@ import os
 import re
 import sys
 import json
-import fritzbox_helper as fh
+from fritzbox_helper import FritzboxHelper
 
 PAGE = 'internet/inetstat_monitor.lua'
 PARAMS = {'useajax':1, 'action':'get_graphic', 'xhr':1, 'myXhr':1}
@@ -42,7 +42,7 @@ def average_bps(datapoints):
 def print_link_saturation():
   """get the current DSL link saturation"""
 
-  data = fh.call_page_with_login(fh.get, PAGE, data=PARAMS)
+  data = FritzboxHelper().getPageWithLogin(PAGE, data=PARAMS)
   # all data is embedded in a one-element array, so strip that array away
   jsondata = json.loads(data)[0]
 

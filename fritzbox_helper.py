@@ -30,140 +30,116 @@ import os
 import requests
 from lxml import etree
 
-USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:10.0) Gecko/20100101 Firefox/10.0"
+class FritzboxHelper:
+  USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:10.0) Gecko/20100101 Firefox/10.0"
 
-def save_session_id(session_id, server, port, user):
-  if '__' in server or '__' in user:
-    raise Exception("Reserved string \"__\" in server or user name")
-  statedir = os.environ['MUNIN_PLUGSTATE'] + '/fritzbox'
-  if not os.path.exists(statedir):
-    os.makedirs(statedir)
-  statefilename = statedir + '/' + server + '__' + str(port) + '__' + user + '.sid'
-  with open(statefilename, 'w') as statefile:
-    statefile.write(session_id)
+  server = ""
+  port = 80
+  user = ""
+  password = ""
 
-def load_session_id(server, port, user):
-  statedir = os.environ['MUNIN_PLUGSTATE'] + '/fritzbox'
-  statefilename = statedir + '/' + server + '__' + str(port) + '__' + user + '.sid'
-  if not os.path.exists(statefilename):
-    return None
-  with open(statefilename, 'r') as statefile:
-    session_id = statefile.readline()
-  return session_id
+  # default constructor
+  def __init__(self):
+      self.server = os.getenv('fritzbox_ip')
+      self.user = os.getenv('fritzbox_user')
+      self.password = os.getenv('fritzbox_password')
 
-def get_session_id(server, password, user='network-maint', port=80):
-  """Obtains the session id after login into the Fritzbox.
-  See https://avm.de/fileadmin/user_upload/Global/Service/Schnittstellen/AVM_Technical_Note_-_Session_ID.pdf
-  for deteils (in German).
+  def getPageWithLogin(self, page, data=None):
+    return self.__callPageWithLogin(self.__get, page, data)
 
-  :param server: the ip address of the Fritzbox
-  :param password: the password to log into the Fritzbox webinterface
-  :param user: the user name to log into the Fritzbox webinterface
-  :param port: the port the Fritzbox webserver runs on
-  :return: the session id
-  """
+  def postPageWithLogin(self, page, data=None):
+    return self.__callPageWithLogin(self.__post, page, data)
 
-  headers = {"Accept": "application/xml",
-             "Content-Type": "text/plain",
-             "User-Agent": USER_AGENT}
+  def __saveSessionId(self, session_id):
+    if '__' in self.server or '__' in self.user:
+      raise Exception("Reserved string \"__\" in server or user name")
+    statedir = os.getenv('MUNIN_PLUGSTATE') + '/fritzbox'
+    if not os.path.exists(statedir):
+      os.makedirs(statedir)
+    statefilename = statedir + '/' + self.server + '__' + str(self.port) + '__' + self.user + '.sid'
+    with open(statefilename, 'w') as statefile:
+      statefile.write(session_id)
 
-  url = 'http://{}:{}/login_sid.lua'.format(server, port)
-  try:
-    r = requests.get(url, headers=headers)
-    r.raise_for_status()
-  except requests.exceptions.HTTPError as err:
-    print(err)
-    sys.exit(1)
+  def load_session_id(self):
+    statedir = os.getenv('MUNIN_PLUGSTATE') + '/fritzbox'
+    statefilename = statedir + '/' + self.server + '__' + str(self.port) + '__' + self.user + '.sid'
+    if not os.path.exists(statefilename):
+      return None
+    with open(statefilename, 'r') as statefile:
+      session_id = statefile.readline()
+      return session_id
 
-  root = etree.fromstring(r.content)
-  session_id = root.xpath('//SessionInfo/SID/text()')[0]
-  if session_id == "0000000000000000":
-    challenge = root.xpath('//SessionInfo/Challenge/text()')[0]
-    challenge_bf = ('{}-{}'.format(challenge, password)).encode('utf-16le')
-    m = hashlib.md5()
-    m.update(challenge_bf)
-    response_bf = '{}-{}'.format(challenge, m.hexdigest().lower())
-  else:
+  def __getSessionId(self):
+    """Obtains the session id after login into the Fritzbox.
+    See https://avm.de/fileadmin/user_upload/Global/Service/Schnittstellen/AVM_Technical_Note_-_Session_ID.pdf
+    for details (in German).
+
+    :param server: the ip address of the Fritzbox
+    :param password: the password to log into the Fritzbox webinterface
+    :param user: the user name to log into the Fritzbox webinterface
+    :param port: the port the Fritzbox webserver runs on
+    :return: the session id
+    """
+
+    headers = {"Accept": "application/xml", "Content-Type": "text/plain", "User-Agent": self.USER_AGENT}
+
+    url = 'http://{}:{}/login_sid.lua'.format(self.server, self.port)
+    try:
+      r = requests.get(url, headers=headers)
+      r.raise_for_status()
+    except requests.exceptions.HTTPError as err:
+      print(err)
+      sys.exit(1)
+
+    root = etree.fromstring(r.content)
+    session_id = root.xpath('//SessionInfo/SID/text()')[0]
+    if session_id == "0000000000000000":
+      challenge = root.xpath('//SessionInfo/Challenge/text()')[0]
+      challenge_bf = ('{}-{}'.format(challenge, self.password)).encode('utf-16le')
+      m = hashlib.md5()
+      m.update(challenge_bf)
+      response_bf = '{}-{}'.format(challenge, m.hexdigest().lower())
+    else:
+      return session_id
+
+    headers = {"Accept": "text/html,application/xhtml+xml,application/xml", "Content-Type": "application/x-www-form-urlencoded", "User-Agent": self.USER_AGENT}
+
+    url = 'http://{}:{}/login_sid.lua?&response={}&username={}'.format(self.server, self.port, response_bf, self.user)
+    try:
+      r = requests.get(url, headers=headers)
+      r.raise_for_status()
+    except requests.exceptions.HTTPError as err:
+      print(err)
+      sys.exit(1)
+
+    root = etree.fromstring(r.content)
+    session_id = root.xpath('//SessionInfo/SID/text()')[0]
+    if session_id == "0000000000000000":
+      print("ERROR - No SID received because of invalid password")
+      sys.exit(0)
+
+    self.__saveSessionId(session_id)
+
     return session_id
 
-  headers = {"Accept": "text/html,application/xhtml+xml,application/xml",
-             "Content-Type": "application/x-www-form-urlencoded",
-             "User-Agent": USER_AGENT}
-
-  url = 'http://{}:{}/login_sid.lua?&response={}&username={}'.format(server, port, response_bf, user)
-  try:
-    r = requests.get(url, headers=headers)
-    r.raise_for_status()
-  except requests.exceptions.HTTPError as err:
-    print(err)
-    sys.exit(1)
-
-  root = etree.fromstring(r.content)
-  session_id = root.xpath('//SessionInfo/SID/text()')[0]
-  if session_id == "0000000000000000":
-    print("ERROR - No SID received because of invalid password")
-    sys.exit(0)
-
-  save_session_id(session_id, server, port, user)
-
-  return session_id
-
-def post(server, session_id, page, port=80, data={}, exceptions=False):
-  """Sends a POST request to the Fritzbox and returns the response
-
-  :param server: the ip address of the Fritzbox
-  :param session_id: a valid session id
-  :param page: the page you are regquesting
-  :param port: the port the Fritzbox webserver runs on
-  :param data: POST data in a map
-  :return: the content of the page
-  """
-
-  data['sid'] = session_id
-
-  headers = {"Accept": "application/json",
-             "Content-Type": "application/x-www-form-urlencoded",
-             "User-Agent": USER_AGENT}
-
-  url = 'http://{}:{}/{}'.format(server, port, page)
-  try:
-    r = requests.post(url, headers=headers, data=data)
-    r.raise_for_status()
-  except requests.exceptions.HTTPError as err:
-    if exceptions:
-      raise err
-    print(err)
-    sys.exit(1)
-  return r.content
-
-def get(server, session_id, page, port=80, data=None, exceptions=False):
-    """Fetches a page from the Fritzbox and returns its content
+  def __post(self, session_id, page, data={}, exceptions=False):
+    """Sends a POST request to the Fritzbox and returns the response
 
     :param server: the ip address of the Fritzbox
     :param session_id: a valid session id
     :param page: the page you are regquesting
     :param port: the port the Fritzbox webserver runs on
-    :param params: GET parameters in a map
+    :param data: POST data in a map
     :return: the content of the page
     """
 
-    headers = {"Accept": "application/xml",
-               "Content-Type": "text/plain",
-               "User-Agent": USER_AGENT}
+    data['sid'] = session_id
 
-    url = 'http://{}:{}/{}?sid={}'.format(server, port, page, session_id)
-    if data:
-      paramsStr = "&"
-      l = len(data)
-      i = 0
-      for k,v in data.items():
-        paramsStr += k + '=' + str(v)
-        i += 1
-        if i < l:
-          paramsStr += '&'
-      url = url + paramsStr
+    headers = {"Accept": "application/json", "Content-Type": "application/x-www-form-urlencoded", "User-Agent": self.USER_AGENT}
+
+    url = 'http://{}:{}/{}'.format(self.server, self.port, page)
     try:
-      r = requests.get(url, headers=headers)
+      r = requests.post(url, headers=headers, data=data)
       r.raise_for_status()
     except requests.exceptions.HTTPError as err:
       if exceptions:
@@ -172,19 +148,51 @@ def get(server, session_id, page, port=80, data=None, exceptions=False):
       sys.exit(1)
     return r.content
 
-def call_page_with_login(method, page, port=80, data=None):
-  server = os.getenv('fritzbox_ip')
-  password = os.getenv('fritzbox_password')
-  user = os.getenv('fritzbox_user')
+  def __get(self, session_id, page, data=None, exceptions=False):
+      """Fetches a page from the Fritzbox and returns its content
 
-  session_id = load_session_id(server, port, user)
-  if session_id != None:
-    try:
-      return method(server, session_id, page, port, data, exceptions=True)
-    except requests.exceptions.HTTPError as e:
-      code = e.response.status_code
-      if code != 403:
+      :param server: the ip address of the Fritzbox
+      :param session_id: a valid session id
+      :param page: the page you are regquesting
+      :param port: the port the Fritzbox webserver runs on
+      :param params: GET parameters in a map
+      :return: the content of the page
+      """
+
+      headers = {"Accept": "application/xml", "Content-Type": "text/plain", "User-Agent": self.USER_AGENT}
+
+      url = 'http://{}:{}/{}?sid={}'.format(self.server, self.port, page, session_id)
+      if data:
+        paramsStr = "&"
+        l = len(data)
+        i = 0
+        for k,v in data.items():
+          paramsStr += k + '=' + str(v)
+          i += 1
+          if i < l:
+            paramsStr += '&'
+        url = url + paramsStr
+      try:
+        r = requests.get(url, headers=headers)
+        r.raise_for_status()
+      except requests.exceptions.HTTPError as err:
+        if exceptions:
+          raise err
         print(err)
         sys.exit(1)
-  session_id = get_session_id(server, password, user, port)
-  return method(server, session_id, page, port, params)
+      return r.content
+
+  def __callPageWithLogin(self, method, page, data=None):
+    session_id = self.load_session_id()
+
+    if session_id != None:
+      try:
+        return method(session_id, page, data, exceptions=True)
+      except requests.exceptions.HTTPError as e:
+        code = e.response.status_code
+        if code != 403:
+          print(err)
+          sys.exit(1)
+
+    session_id = self.__getSessionId()
+    return method(session_id, page, data)
