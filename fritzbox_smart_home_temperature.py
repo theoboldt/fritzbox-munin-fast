@@ -14,14 +14,13 @@ def printSmartHomeTemperature():
     """get the current cpu temperature"""
 
     for data in retrieveSmartHomeTemps():
-      print ("t{}.value {}".format(data['NewDeviceId'],data['NewTemperatureCelsius']))
+      print ("t{}.value {}".format(data['NewDeviceId'],float(data['NewTemperatureCelsius']) / 10))
 
 def printConfig():
     print("graph_title Smart Home temperature")
     print("graph_vlabel degrees Celsius")
     print("graph_category sensors")
     print("graph_scale no")
-    print("graph_args --base 10")
 
     for data in retrieveSmartHomeTemps():
         print ("t{}.label {}".format(data['NewDeviceId'],data['NewDeviceName']))
