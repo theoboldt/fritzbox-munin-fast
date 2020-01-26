@@ -44,10 +44,10 @@ class FritzboxInterface:
       self.user = os.getenv('fritzbox_user')
       self.password = os.getenv('fritzbox_password')
 
-  def getPageWithLogin(self, page, data=None):
+  def getPageWithLogin(self, page, data={}):
     return self.__callPageWithLogin(self.__get, page, data)
 
-  def postPageWithLogin(self, page, data=None):
+  def postPageWithLogin(self, page, data={}):
     return self.__callPageWithLogin(self.__post, page, data)
 
   def __saveSessionId(self, session_id):
@@ -148,7 +148,7 @@ class FritzboxInterface:
       sys.exit(1)
     return r.content
 
-  def __get(self, session_id, page, data=None, exceptions=False):
+  def __get(self, session_id, page, data={}, exceptions=False):
       """Fetches a page from the Fritzbox and returns its content
 
       :param server: the ip address of the Fritzbox
@@ -182,7 +182,7 @@ class FritzboxInterface:
         sys.exit(1)
       return r.content
 
-  def __callPageWithLogin(self, method, page, data=None):
+  def __callPageWithLogin(self, method, page, data={}):
     session_id = self.__loadSessionId()
 
     if session_id != None:

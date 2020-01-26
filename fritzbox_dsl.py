@@ -101,7 +101,7 @@ def retrieve_max_values():
     max = {}
     page = 'internet/inetstat_monitor.lua'
     params = {'useajax':1, 'action':'get_graphic', 'xhr':1, 'myXhr':1}
-    data = fh.call_page_with_login(fh.get, page, data=params)
+    data = FritzboxInterface().getPageWithLogin(page, data=params)
 
     # Retrieve max values
     jsondata = json.loads(data)[0]
