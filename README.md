@@ -34,6 +34,8 @@ Multigraph plugin, showing:
  
 (requires password)
 
+## fritzbox_smart_home_temperature
+
 ## fritzbox_energy
 Multigraph plugin, showing:
  - power consumption for CPU, WiFi, WAN, Fon, USB and total
@@ -57,7 +59,7 @@ Multigraph plugin, showing for 2.4GHz and 5GHz
 
 1. Pre-requesites for the `fritzbox_traffic` and `fritzbox_connection_uptime` plugins are the [fritzconnection](https://pypi.python.org/pypi/fritzconnection) and [requests](https://pypi.python.org/pypi/requests) package. To install it
 
-        pip install fritzconnection requests
+        pip install -r requirements.txt
 
 2. Make sure the FritzBox has UPnP status information enabled. (German interface: Heimnetz > Heimnetzübersicht > Netzwerkeinstellungen > Statusinformationen über UPnP übertragen)
 
