@@ -30,7 +30,7 @@ import os
 import requests
 from lxml import etree
 
-class FritzboxHelper:
+class FritzboxInterface:
   USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:10.0) Gecko/20100101 Firefox/10.0"
 
   server = ""
@@ -60,7 +60,7 @@ class FritzboxHelper:
     with open(statefilename, 'w') as statefile:
       statefile.write(session_id)
 
-  def load_session_id(self):
+  def __loadSessionId(self):
     statedir = os.getenv('MUNIN_PLUGSTATE') + '/fritzbox'
     statefilename = statedir + '/' + self.server + '__' + str(self.port) + '__' + self.user + '.sid'
     if not os.path.exists(statefilename):
@@ -183,7 +183,7 @@ class FritzboxHelper:
       return r.content
 
   def __callPageWithLogin(self, method, page, data=None):
-    session_id = self.load_session_id()
+    session_id = self.__loadSessionId()
 
     if session_id != None:
       try:

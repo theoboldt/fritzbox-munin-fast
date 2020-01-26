@@ -25,7 +25,7 @@ import os
 import re
 import sys
 import json
-from fritzbox_helper import FritzboxHelper
+from FritzboxInterface import FritzboxInterface
 
 PAGE = 'data.lua'
 PARAMS = {'xhr':1, 'lang':'de', 'page':'energy', 'xhrId':'all', 'useajax':1, 'no_sidrenew':None}
@@ -70,7 +70,7 @@ def print_energy_stats():
     type = get_type()
 
     # download the graphs
-    data = FritzboxHelper().postPageWithLogin(PAGE, data=PARAMS)
+    data = FritzboxInterface().postPageWithLogin(PAGE, data=PARAMS)
     jsondata = json.loads(data)['data']['drain']
 
     devices = get_devices_for(type)

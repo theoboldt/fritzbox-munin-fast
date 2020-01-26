@@ -24,7 +24,7 @@ import os
 import sys
 import json
 import lxml.html as html
-from fritzbox_helper import FritzboxHelper
+from FritzboxInterface import FritzboxInterface
 
 PAGE = 'internet/dsl_stats_tab.lua'
 PARAMS = {'update':'mainDiv', 'useajax':1, 'xhr':1}
@@ -66,7 +66,7 @@ def print_dsl_stats():
     modes = get_modes()
 
     # download the table
-    data = FritzboxHelper().getPageWithLogin(PAGE, data=PARAMS)
+    data = FritzboxInterface().getPageWithLogin(PAGE, data=PARAMS)
     root = html.fragments_fromstring(data)
     
     if 'capacity' in modes:

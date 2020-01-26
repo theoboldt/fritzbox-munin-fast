@@ -25,7 +25,7 @@ import os
 import re
 import sys
 import json
-from fritzbox_helper import FritzboxHelper
+from FritzboxInterface import FritzboxInterface
 
 PAGE = 'data.lua'
 PARAMS = {'xhr':1, 'lang':'de', 'page':'chan', 'xhrId':'environment', 'useajax':1, 'no_sidrenew':None}
@@ -54,7 +54,7 @@ def print_wifi_load():
   """get the current wifi bandwidth usage"""
 
   # set up the graphs (load the 10-minute view)
-  fritzboxHelper = FritzboxHelper()
+  fritzboxHelper = FritzboxInterface()
   fritzboxHelper.postPageWithLogin(PAGE, data=PARAMS_INIT)
   # download the graphs
   data = fritzboxHelper.postPageWithLogin(PAGE, data=PARAMS)
