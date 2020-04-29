@@ -24,7 +24,7 @@ import os
 import re
 import sys
 import json
-import fritzbox_helper as fh
+from FritzboxInterface import FritzboxInterface
 
 PAGE = 'data.lua'
 PARAMS = {'xhr':1, 'lang':'de', 'page':'ecoStat', 'xhrId':'all', 'useajax':1, 'no_sidrenew':None}
@@ -57,7 +57,7 @@ def print_system_stats():
   modes = get_modes()
 
   # download the graphs
-  data = fh.call_page_with_login(fh.post, PAGE, data=PARAMS)
+  data = FritzboxInterface().postPageWithLogin(PAGE, data=PARAMS)
   jsondata = json.loads(data)['data']
 
   if 'cpu' in modes:

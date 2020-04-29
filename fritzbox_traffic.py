@@ -21,8 +21,6 @@
 
 import os
 import sys
-import fritzbox_helper as fh
-
 from fritzconnection import FritzConnection
 
 def print_traffic():
