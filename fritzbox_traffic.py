@@ -27,7 +27,7 @@ def print_traffic():
   try:
     conn = FritzConnection(address=os.getenv('fritzbox_ip'), password=os.getenv('fritzbox_password'), use_tls=True)
   except Exception as e:
-    sys.exit("Couldn't get WAN traffic")
+    sys.exit("Couldn't get WAN traffic: " + str(e))
 
   down_traffic = conn.call_action('WANCommonInterfaceConfig', 'GetTotalBytesReceived')['NewTotalBytesReceived']
   print('down.value %d' % down_traffic)
@@ -80,5 +80,5 @@ if __name__ == "__main__":
     elif len(sys.argv) == 1 or (len(sys.argv) == 2 and sys.argv[1] == 'fetch'):
         try:
             print_traffic()
-        except:
-            sys.exit("Couldn't retrieve fritzbox traffic")
+        except Exception as e:
+            sys.exit("Couldn't retrieve fritzbox traffic: " + str(e))

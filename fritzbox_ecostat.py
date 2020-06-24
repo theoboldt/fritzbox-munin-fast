@@ -123,5 +123,5 @@ if __name__ == "__main__":
   elif len(sys.argv) == 1 or (len(sys.argv) == 2 and sys.argv[1] == 'fetch'):
     try:
       print_system_stats()
-    except:
-      sys.exit("Couldn't retrieve fritzbox system stats")
+    except Exception as e:
+      sys.exit("Couldn't retrieve fritzbox system stats: " + str(e))

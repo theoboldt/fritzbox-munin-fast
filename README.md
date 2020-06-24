@@ -61,7 +61,7 @@ Multigraph plugin, showing for 2.4GHz and 5GHz
 
         pip install -r requirements.txt
 
-2. Make sure the FritzBox has UPnP status information enabled. (German interface: Heimnetz > Heimnetzübersicht > Netzwerkeinstellungen > Statusinformationen über UPnP übertragen)
+2. Make sure the FritzBox has UPnP status information enabled. (web interface: Home Network -> Network -> Network Settings -> Universal Plug & Play (UPnP))
 
 3. Copy all the scripts to `/usr/share/munin/plugins`
 
@@ -113,3 +113,10 @@ You can split the graphs of your FritzBox from the localhost graphs by following
 ## Environment Settings
 
   Do not forget to restart the munin-node daemon as described in step 3 of the installation instructions above.
+
+## Testing
+
+To test a plugin use
+```
+munin-run fritzbox_connection.py
+```

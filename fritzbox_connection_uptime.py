@@ -26,7 +26,7 @@ def print_uptime():
   try:
     conn = FritzConnection(address=os.getenv('fritzbox_ip'), password=os.getenv('fritzbox_password'), use_tls=True)
   except Exception as e:
-    sys.exit("Couldn't get connection uptime")
+    sys.exit("Couldn't get connection uptime: " + str(e))
 
   # @see https://avm.de/fileadmin/user_upload/Global/Service/Schnittstellen/wanipconnSCPD.pdf
   connectionType = conn.call_action('Layer3Forwarding', 'GetDefaultConnectionService')['NewDefaultConnectionService']
@@ -54,5 +54,5 @@ if __name__ == "__main__":
   elif len(sys.argv) == 1 or (len(sys.argv) == 2 and sys.argv[1] == 'fetch'):
     try:
       print_uptime()
-    except:
-      sys.exit("Couldn't retrieve fritzbox connection uptime")
+    except Exception as e:
+      sys.exit("Couldn't retrieve fritzbox connection uptime: " + str(e))

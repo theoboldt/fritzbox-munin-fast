@@ -56,5 +56,5 @@ if __name__ == '__main__':
     # Some docs say it'll be called with fetch, some say no arg at all
     try:
       printSmartHomeTemperature()
-    except:
-      sys.exit("Couldn't retrieve fritzbox smarthome temperatures")
+    except Exception as e:
+      sys.exit("Couldn't retrieve fritzbox smarthome temperatures: " + str(e))
