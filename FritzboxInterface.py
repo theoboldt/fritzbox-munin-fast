@@ -31,18 +31,34 @@ import requests
 from lxml import etree
 
 class FritzboxInterface:
-  USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:10.0) Gecko/20100101 Firefox/10.0"
-
-  server = ""
-  port = 80
+  """the server address of the Fritzbox (ip or name)"""
+  server = "fritz.box"
+  """the port the Fritzbox webserver runs on"""
+  port = 443
+  """the user name to log into the Fritzbox webinterface"""
   user = ""
+  """the password to log into the Fritzbox webinterface"""
   password = ""
+  useTls = True
+  certificateFile = "./box.cer"
+
+  __baseUri = ""
 
   # default constructor
   def __init__(self):
-      self.server = os.getenv('fritzbox_ip')
+      if os.getenv('fritzbox_ip'):
+        self.server = os.getenv('fritzbox_ip')
       self.user = os.getenv('fritzbox_user')
       self.password = os.getenv('fritzbox_password')
+      self.__baseUri = self.__getBaseUri()
+
+  def __getBaseUri(self):
+    DEFAULT_PORTS = (80, 443)
+    SCHEMES = ('http', 'https')
+    if self.port and self.port != DEFAULT_PORTS[self.useTls]:
+        return '{}://{}:{}'.format(SCHEMES[self.useTls], self.server, self.port)
+    else:
+        return '{}://{}'.format(SCHEMES[self.useTls], self.server)
 
   def getPageWithLogin(self, page, data={}):
     return self.__callPageWithLogin(self.__get, page, data)
@@ -74,23 +90,20 @@ class FritzboxInterface:
     See https://avm.de/fileadmin/user_upload/Global/Service/Schnittstellen/AVM_Technical_Note_-_Session_ID.pdf
     for details (in German).
 
-    :param server: the ip address of the Fritzbox
-    :param password: the password to log into the Fritzbox webinterface
-    :param user: the user name to log into the Fritzbox webinterface
-    :param port: the port the Fritzbox webserver runs on
     :return: the session id
     """
 
-    headers = {"Accept": "application/xml", "Content-Type": "text/plain", "User-Agent": self.USER_AGENT}
+    headers = {"Accept": "application/xml", "Content-Type": "text/plain"}
 
-    url = 'http://{}:{}/login_sid.lua'.format(self.server, self.port)
+    url = '{}/login_sid.lua'.format(self.__baseUri)
     try:
-      r = requests.get(url, headers=headers)
+      r = requests.get(url, headers=headers, verify=self.certificateFile)
       r.raise_for_status()
-    except requests.exceptions.HTTPError as err:
+    except (requests.exceptions.HTTPError, requests.exceptions.SSLError) as err:
       print(err)
       sys.exit(1)
 
+    params = {}
     root = etree.fromstring(r.content)
     session_id = root.xpath('//SessionInfo/SID/text()')[0]
     if session_id == "0000000000000000":
@@ -99,16 +112,19 @@ class FritzboxInterface:
       m = hashlib.md5()
       m.update(challenge_bf)
       response_bf = '{}-{}'.format(challenge, m.hexdigest().lower())
+      params['response'] = response_bf
     else:
       return session_id
 
-    headers = {"Accept": "text/html,application/xhtml+xml,application/xml", "Content-Type": "application/x-www-form-urlencoded", "User-Agent": self.USER_AGENT}
+    params['username'] = self.user
 
-    url = 'http://{}:{}/login_sid.lua?&response={}&username={}'.format(self.server, self.port, response_bf, self.user)
+    headers = {"Accept": "text/html,application/xhtml+xml,application/xml", "Content-Type": "application/x-www-form-urlencoded"}
+
+    url = '{}/login_sid.lua'.format(self.__baseUri)
     try:
-      r = requests.get(url, headers=headers)
+      r = requests.get(url, headers=headers, params=params, verify=self.certificateFile)
       r.raise_for_status()
-    except requests.exceptions.HTTPError as err:
+    except (requests.exceptions.HTTPError, requests.exceptions.SSLError) as err:
       print(err)
       sys.exit(1)
 
@@ -122,46 +138,56 @@ class FritzboxInterface:
 
     return session_id
 
-  def __post(self, session_id, page, data={}, exceptions=False):
+  def __callPageWithLogin(self, method, page, data={}):
+    session_id = self.__loadSessionId()
+
+    if session_id != None:
+      try:
+        return method(session_id, page, data)
+      except (requests.exceptions.HTTPError,
+             requests.exceptions.SSLError) as e:
+        code = e.response.status_code
+        if code != 403:
+          print(e)
+          sys.exit(1)
+
+    session_id = self.__getSessionId()
+    return method(session_id, page, data)
+
+  def __post(self, session_id, page, data={}):
     """Sends a POST request to the Fritzbox and returns the response
 
-    :param server: the ip address of the Fritzbox
     :param session_id: a valid session id
     :param page: the page you are regquesting
-    :param port: the port the Fritzbox webserver runs on
     :param data: POST data in a map
     :return: the content of the page
     """
 
     data['sid'] = session_id
 
-    headers = {"Accept": "application/json", "Content-Type": "application/x-www-form-urlencoded", "User-Agent": self.USER_AGENT}
+    headers = {"Accept": "application/json", "Content-Type": "application/x-www-form-urlencoded"}
 
-    url = 'http://{}:{}/{}'.format(self.server, self.port, page)
-    try:
-      r = requests.post(url, headers=headers, data=data)
-      r.raise_for_status()
-    except requests.exceptions.HTTPError as err:
-      if exceptions:
-        raise err
-      print(err)
-      sys.exit(1)
+    url = '{}/{}'.format(self.__baseUri, page)
+
+    r = requests.post(url, headers=headers, data=data, verify=self.certificateFile)
+    r.raise_for_status()
+
     return r.content
 
-  def __get(self, session_id, page, data={}, exceptions=False):
+  def __get(self, session_id, page, data={}):
       """Fetches a page from the Fritzbox and returns its content
 
-      :param server: the ip address of the Fritzbox
       :param session_id: a valid session id
       :param page: the page you are regquesting
-      :param port: the port the Fritzbox webserver runs on
       :param params: GET parameters in a map
       :return: the content of the page
       """
 
-      headers = {"Accept": "application/xml", "Content-Type": "text/plain", "User-Agent": self.USER_AGENT}
+      headers = {"Accept": "application/xml", "Content-Type": "text/plain"}
 
-      url = 'http://{}:{}/{}?sid={}'.format(self.server, self.port, page, session_id)
+      params = data
+      params["sid"] = session_id
+      url = '{}/{}'.format(self.__baseUri, page)
       if data:
         paramsStr = "&"
         l = len(data)
@@ -171,28 +197,9 @@ class FritzboxInterface:
           i += 1
           if i < l:
             paramsStr += '&'
-        url = url + paramsStr
-      try:
-        r = requests.get(url, headers=headers)
-        r.raise_for_status()
-      except requests.exceptions.HTTPError as err:
-        if exceptions:
-          raise err
-        print(err)
-        sys.exit(1)
+        #url = url + paramsStr
+
+      r = requests.get(url, headers=headers, params=params, verify=self.certificateFile)
+      r.raise_for_status()
+
       return r.content
-
-  def __callPageWithLogin(self, method, page, data={}):
-    session_id = self.__loadSessionId()
-
-    if session_id != None:
-      try:
-        return method(session_id, page, data, exceptions=True)
-      except requests.exceptions.HTTPError as e:
-        code = e.response.status_code
-        if code != 403:
-          print(err)
-          sys.exit(1)
-
-    session_id = self.__getSessionId()
-    return method(session_id, page, data)
