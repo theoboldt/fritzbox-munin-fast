@@ -21,31 +21,27 @@
 
 import os
 import sys
-from fritzconnection import FritzConnection
+from fritzconnection.lib.fritzstatus import FritzStatus
 
 def print_traffic():
   try:
-    conn = FritzConnection(address=os.getenv('fritzbox_ip'), password=os.getenv('fritzbox_password'), use_tls=True)
+    conn = FritzStatus(address=os.getenv('fritzbox_ip'), password=os.getenv('fritzbox_password'), use_tls=True)
   except Exception as e:
     sys.exit("Couldn't get WAN traffic: " + str(e))
 
-  down_traffic = conn.call_action('WANCommonInterfaceConfig', 'GetTotalBytesReceived')['NewTotalBytesReceived']
-  print('down.value %d' % down_traffic)
+  traffic = conn.transmission_rate
+  print('down.value %d' % traffic[1])
+  print('up.value %d' % traffic[0])
 
-  up_traffic = conn.call_action('WANCommonInterfaceConfig', 'GetTotalBytesSent')['NewTotalBytesSent']
-  print('up.value %d' % up_traffic)
-
-  if not os.getenv('traffic_remove_max'):
-    max_down_traffic = conn.call_action('WANCommonInterfaceConfig', 'GetCommonLinkProperties')['NewLayer1DownstreamMaxBitRate']
-    print('maxdown.value %d' % max_down_traffic)
-
-    max_up_traffic = conn.call_action('WANCommonInterfaceConfig', 'GetCommonLinkProperties')['NewLayer1UpstreamMaxBitRate']
-    print('maxup.value %d' % max_up_traffic)
+  if not os.environ.get('traffic_remove_max') or "false" in os.environ.get('traffic_remove_max'):
+    max_traffic = conn.max_bit_rate
+    print('maxdown.value %d' % max_traffic[1])
+    print('maxup.value %d' % max_traffic[0])
 
 def print_config():
   print("graph_title WAN traffic")
   print("graph_args --base 1000")
-  print("graph_vlabel bits in (-) / out (+) per \${graph_period}")
+  print("graph_vlabel bit in (-) / out (+) per ${graph_period}")
   print("graph_category network")
   print("graph_order down up maxdown maxup")
   print("down.label received")
@@ -62,7 +58,7 @@ def print_config():
   print("up.max 1000000000")
   print("up.negative down")
   print("up.info Traffic of the WAN interface.")
-  if not os.getenv('traffic_remove_max'):
+  if not os.environ.get('traffic_remove_max') or "false" in os.environ.get('traffic_remove_max'):
     print("maxdown.label received")
     print("maxdown.type GAUGE")
     print("maxdown.graph no")
