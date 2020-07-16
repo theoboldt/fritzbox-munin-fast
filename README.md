@@ -67,7 +67,7 @@ Multigraph plugin, showing for 2.4GHz and 5GHz
 
 1. Copy all the scripts to `/usr/share/munin/plugins`
 
-1. (optional) If you want to connect to FritzBox using SSL, download the Fritz certificate (web interface: _Internet > Freigaben > FritzBox Dienste > Zertifikat > Zertifikat herunterladen_) and save the file ``box.cer`` to the same folder as the munin plugins.
+1. (optional) If you want to connect to FritzBox using SSL, download the Fritz certificate (web interface: _Internet > Freigaben > FritzBox Dienste > Zertifikat > Zertifikat herunterladen_) and save it to `/etc/munin/box.cer`.
 
 1. Create entry in `/etc/munin/plugin-conf.d/munin-node`:
 

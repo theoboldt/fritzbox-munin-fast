@@ -40,7 +40,7 @@ class FritzboxInterface:
   """the password to log into the Fritzbox webinterface"""
   password = ""
   useTls = True
-  certificateFile = "./box.cer"
+  certificateFile = os.getenv('MUNIN_CONFDIR') + '/box.cer'
 
   __baseUri = ""
 
@@ -50,6 +50,7 @@ class FritzboxInterface:
         self.server = os.getenv('fritzbox_ip')
       self.user = os.getenv('fritzbox_user')
       self.password = os.getenv('fritzbox_password')
+      self.certificateFile = os.getenv('fritzbox_certificate')
       self.__baseUri = self.__getBaseUri()
 
   def __getBaseUri(self):
@@ -188,16 +189,6 @@ class FritzboxInterface:
       params = data
       params["sid"] = session_id
       url = '{}/{}'.format(self.__baseUri, page)
-      if data:
-        paramsStr = "&"
-        l = len(data)
-        i = 0
-        for k,v in data.items():
-          paramsStr += k + '=' + str(v)
-          i += 1
-          if i < l:
-            paramsStr += '&'
-        #url = url + paramsStr
 
       r = requests.get(url, headers=headers, params=params, verify=self.certificateFile)
       r.raise_for_status()
