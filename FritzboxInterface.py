@@ -50,7 +50,8 @@ class FritzboxInterface:
         self.server = os.getenv('fritzbox_ip')
       self.user = os.getenv('fritzbox_user')
       self.password = os.getenv('fritzbox_password')
-      self.certificateFile = os.getenv('fritzbox_certificate')
+      if os.getenv('fritzbox_certificate'):
+        self.certificateFile = os.getenv('fritzbox_certificate')
       self.__baseUri = self.__getBaseUri()
 
   def __getBaseUri(self):
