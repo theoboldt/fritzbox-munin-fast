@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-  fritzbox_helper - A munin plugin for Linux to monitor AVM Fritzbox
+  FritzboxInterface - A munin plugin for Linux to monitor AVM Fritzbox
   Copyright (C) 2015 Christian Stade-Schuldt
   Copyright (C) 2019 Rene Walendy
   Author: Christian Stade-Schuldt, Rene Walendy
@@ -13,6 +13,7 @@
   env.fritzbox_ip [ip address of the fritzbox]
   env.fritzbox_password [fritzbox password]
   env.fritzbox_user [fritzbox user, set any value if not required]
+  env.fritzbox_use_tls [true or false, optional]
 
   This plugin supports the following munin configuration parameters:
   #%# family=auto contrib
@@ -53,6 +54,8 @@ class FritzboxInterface:
       if os.getenv('fritzbox_certificate'):
         self.certificateFile = os.getenv('fritzbox_certificate')
       self.__baseUri = self.__getBaseUri()
+      if os.getenv('fritzbox_use_tls'):
+        self.useTls = os.getenv('fritzbox_use_tls') == 'true'
 
   def __getBaseUri(self):
     DEFAULT_PORTS = (80, 443)
