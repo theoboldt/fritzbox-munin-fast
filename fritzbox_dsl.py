@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
   fritzbox_dsl - A munin plugin for Linux to monitor AVM Fritzbox DSL link quality
   stats

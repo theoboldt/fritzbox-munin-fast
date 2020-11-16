@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
   fritzbox_wifi_load - A munin plugin for Linux to monitor AVM Fritzbox wifi
   bandwidth usage and neighbor AP count

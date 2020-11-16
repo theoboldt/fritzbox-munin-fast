@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
   fritzbox_energy - A munin plugin for Linux to monitor AVM Fritzbox energy
   stats

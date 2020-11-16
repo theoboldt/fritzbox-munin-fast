@@ -76,6 +76,7 @@ Multigraph plugin, showing for 2.4GHz and 5GHz
         [fritzbox_*]
         env.fritzbox_password <fritzbox_password>
         env.fritzbox_user <fritzbox_user>
+        env.fritzbox_use_tls true
         host_name fritzbox
    
    See the plugin files for plugin-specific configuration options.
