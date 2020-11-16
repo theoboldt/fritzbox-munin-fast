@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
   fritzbox_link_saturation - A munin plugin for Linux to monitor AVM Fritzbox
   WAN link saturation with QoS stats
