@@ -21,13 +21,15 @@
 import os
 import sys
 from fritzconnection.lib.fritzstatus import FritzStatus
+from FritzboxConfig import FritzboxConfig
 
 class FritzboxConnectionUptime:
   __connection = None
 
   def __init__(self):
+    config = FritzboxConfig()
     try:
-      self.__connection = FritzStatus(address=os.getenv('fritzbox_ip'), password=os.getenv('fritzbox_password'), use_tls=True)
+      self.__connection = FritzStatus(address=config.server, password=config.password, use_tls=config.useTls)
     except Exception as e:
       sys.exit("Couldn't get connection uptime: " + str(e))
 

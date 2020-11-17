@@ -22,10 +22,13 @@
 import os
 import sys
 from fritzconnection.lib.fritzstatus import FritzStatus
+from FritzboxConfig import FritzboxConfig
 
 def print_traffic():
+  config = FritzboxConfig()
+
   try:
-    conn = FritzStatus(address=os.getenv('fritzbox_ip'), password=os.getenv('fritzbox_password'), use_tls=True)
+    conn = FritzStatus(address=config.server, password=config.password, use_tls=config.useTls)
   except Exception as e:
     sys.exit("Couldn't get WAN traffic: " + str(e))
 
@@ -39,8 +42,9 @@ def print_traffic():
     print('maxup.value %d' % max_traffic[0])
 
 def print_config():
+  config = FritzboxConfig()
   try:
-    conn = FritzStatus(address=os.getenv('fritzbox_ip'), password=os.getenv('fritzbox_password'), use_tls=True)
+    conn = FritzStatus(address=config.server, password=config.password, use_tls=config.useTls)
   except Exception as e:
     print(e)
     sys.exit("Couldn't get WAN traffic: " + str(e))

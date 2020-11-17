@@ -30,40 +30,24 @@ import os
 
 import requests
 from lxml import etree
+from FritzboxConfig import FritzboxConfig
 
 class FritzboxInterface:
-  """the server address of the Fritzbox (ip or name)"""
-  server = "fritz.box"
-  """the port the Fritzbox webserver runs on"""
-  port = 443
-  """the user name to log into the Fritzbox webinterface"""
-  user = ""
-  """the password to log into the Fritzbox webinterface"""
-  password = ""
-  useTls = True
-  certificateFile = os.getenv('MUNIN_CONFDIR') + '/box.cer'
-
+  config = None
   __baseUri = ""
 
   # default constructor
   def __init__(self):
-      if os.getenv('fritzbox_ip'):
-        self.server = os.getenv('fritzbox_ip')
-      self.user = os.getenv('fritzbox_user')
-      self.password = os.getenv('fritzbox_password')
-      if os.getenv('fritzbox_certificate'):
-        self.certificateFile = os.getenv('fritzbox_certificate')
-      self.__baseUri = self.__getBaseUri()
-      if os.getenv('fritzbox_use_tls'):
-        self.useTls = os.getenv('fritzbox_use_tls') == 'true'
+    self.config = FritzboxConfig()
+    self.__baseUri = self.__getBaseUri()
 
   def __getBaseUri(self):
     DEFAULT_PORTS = (80, 443)
     SCHEMES = ('http', 'https')
-    if self.port and self.port != DEFAULT_PORTS[self.useTls]:
-        return '{}://{}:{}'.format(SCHEMES[self.useTls], self.server, self.port)
+    if self.config.port and self.config.port != DEFAULT_PORTS[self.config.useTls]:
+        return '{}://{}:{}'.format(SCHEMES[self.config.useTls], self.config.server, self.config.port)
     else:
-        return '{}://{}'.format(SCHEMES[self.useTls], self.server)
+        return '{}://{}'.format(SCHEMES[self.config.useTls], self.config.server)
 
   def getPageWithLogin(self, page, data={}):
     return self.__callPageWithLogin(self.__get, page, data)
@@ -72,18 +56,18 @@ class FritzboxInterface:
     return self.__callPageWithLogin(self.__post, page, data)
 
   def __saveSessionId(self, session_id):
-    if '__' in self.server or '__' in self.user:
+    if '__' in self.config.server or '__' in self.config.user:
       raise Exception("Reserved string \"__\" in server or user name")
     statedir = os.getenv('MUNIN_PLUGSTATE') + '/fritzbox'
     if not os.path.exists(statedir):
       os.makedirs(statedir)
-    statefilename = statedir + '/' + self.server + '__' + str(self.port) + '__' + self.user + '.sid'
+    statefilename = statedir + '/' + self.config.server + '__' + str(self.config.port) + '__' + self.config.user + '.sid'
     with open(statefilename, 'w') as statefile:
       statefile.write(session_id)
 
   def __loadSessionId(self):
     statedir = os.getenv('MUNIN_PLUGSTATE') + '/fritzbox'
-    statefilename = statedir + '/' + self.server + '__' + str(self.port) + '__' + self.user + '.sid'
+    statefilename = statedir + '/' + self.config.server + '__' + str(self.config.port) + '__' + self.config.user + '.sid'
     if not os.path.exists(statefilename):
       return None
     with open(statefilename, 'r') as statefile:
@@ -102,7 +86,7 @@ class FritzboxInterface:
 
     url = '{}/login_sid.lua'.format(self.__baseUri)
     try:
-      r = requests.get(url, headers=headers, verify=self.certificateFile)
+      r = requests.get(url, headers=headers, verify=self.config.certificateFile)
       r.raise_for_status()
     except (requests.exceptions.HTTPError, requests.exceptions.SSLError) as err:
       print(err)
@@ -113,7 +97,7 @@ class FritzboxInterface:
     session_id = root.xpath('//SessionInfo/SID/text()')[0]
     if session_id == "0000000000000000":
       challenge = root.xpath('//SessionInfo/Challenge/text()')[0]
-      challenge_bf = ('{}-{}'.format(challenge, self.password)).encode('utf-16le')
+      challenge_bf = ('{}-{}'.format(challenge, self.config.password)).encode('utf-16le')
       m = hashlib.md5()
       m.update(challenge_bf)
       response_bf = '{}-{}'.format(challenge, m.hexdigest().lower())
@@ -121,13 +105,13 @@ class FritzboxInterface:
     else:
       return session_id
 
-    params['username'] = self.user
+    params['username'] = self.config.user
 
     headers = {"Accept": "text/html,application/xhtml+xml,application/xml", "Content-Type": "application/x-www-form-urlencoded"}
 
     url = '{}/login_sid.lua'.format(self.__baseUri)
     try:
-      r = requests.get(url, headers=headers, params=params, verify=self.certificateFile)
+      r = requests.get(url, headers=headers, params=params, verify=self.config.certificateFile)
       r.raise_for_status()
     except (requests.exceptions.HTTPError, requests.exceptions.SSLError) as err:
       print(err)
@@ -174,7 +158,7 @@ class FritzboxInterface:
 
     url = '{}/{}'.format(self.__baseUri, page)
 
-    r = requests.post(url, headers=headers, data=data, verify=self.certificateFile)
+    r = requests.post(url, headers=headers, data=data, verify=self.config.certificateFile)
     r.raise_for_status()
 
     return r.content
@@ -194,7 +178,7 @@ class FritzboxInterface:
       params["sid"] = session_id
       url = '{}/{}'.format(self.__baseUri, page)
 
-      r = requests.get(url, headers=headers, params=params, verify=self.certificateFile)
+      r = requests.get(url, headers=headers, params=params, verify=self.config.certificateFile)
       r.raise_for_status()
 
       return r.content
