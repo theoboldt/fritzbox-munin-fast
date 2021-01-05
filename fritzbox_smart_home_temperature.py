@@ -9,6 +9,7 @@ import os
 import re
 import sys
 from fritzconnection import FritzConnection
+from FritzboxConfig import FritzboxConfig
 
 def printSmartHomeTemperature():
     """get the current cpu temperature"""
@@ -30,9 +31,10 @@ def printConfig():
 
 def retrieveSmartHomeTemps():
     smartHomeData = []
+    config = FritzboxConfig()
 
     try:
-      connection = FritzConnection(address=os.getenv('fritzbox_ip'), password=os.getenv('fritzbox_password'), use_tls=True)
+      connection = FritzConnection(address=config.server, password=config.password, use_tls=config.useTls)
     except Exception as e:
       sys.exit("Couldn't get temperature: " + str(e))
 
